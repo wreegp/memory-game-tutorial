@@ -10,58 +10,79 @@ var cardList = [
     "metal",
     "psychic",
     "water"
-]
-
+];
 
 var cardSet;
 var board = [];
 var rows = 4;
-var columns =5;
+var columns = 5;
 
 var card1Selected;
 var card2Selected;
 
-window.onload = function() {
+var difficulty = "easy"; // Default difficulty
+
+window.onload = function () {
     shuffleCards();
     startGame();
-}
+};
 
 function shuffleCards() {
     cardSet = cardList.concat(cardList); //two of each card
-    console.log(cardSet);
-    //shuffle
+
+    // Shuffle
     for (let i = 0; i < cardSet.length; i++) {
         let j = Math.floor(Math.random() * cardSet.length); //get random index
-        //swap
+        // Swap
         let temp = cardSet[i];
         cardSet[i] = cardSet[j];
         cardSet[j] = temp;
     }
-    console.log(cardSet);
+}
+
+function changeDifficulty() {
+    difficulty = document.getElementById("difficulty").value;
+    clearBoard();
+    startGame();
+}
+
+function clearBoard() {
+    document.getElementById("board").innerHTML = "";
+    board = [];
 }
 
 function startGame() {
-    //arrange the board 4x5
+    shuffleCards();
+
     for (let r = 0; r < rows; r++) {
         let row = [];
         for (let c = 0; c < columns; c++) {
             let cardImg = cardSet.pop();
-            row.push(cardImg); //JS
+            row.push(cardImg);
 
-            // <img id="0-0" class="card" src="water.jpg">
             let card = document.createElement("img");
             card.id = r.toString() + "-" + c.toString();
             card.src = cardImg + ".jpg";
             card.classList.add("card");
             card.addEventListener("click", selectCard);
             document.getElementById("board").append(card);
-
         }
         board.push(row);
     }
 
-    console.log(board);
-    setTimeout(hideCards, 1000);
+    setTimeout(hideCards, getGameTimer());
+}
+
+
+function hideCards() {
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns; c++) {
+            let card = document.getElementById(r.toString() + "-" + c.toString());
+            card.src = "back.jpg";
+        }
+
+        setTimeout(update, getGameTimer());
+    }
 }
 
 function hideCards() {
@@ -70,11 +91,12 @@ function hideCards() {
             let card = document.getElementById(r.toString() + "-" + c.toString());
             card.src = "back.jpg";
         }
+
+        setTimeout(update, getGameTimer());
     }
 }
 
 function selectCard() {
-
     if (this.src.includes("back")) {
         if (!card1Selected) {
             card1Selected = this;
@@ -84,8 +106,7 @@ function selectCard() {
             let c = parseInt(coords[1]);
 
             card1Selected.src = board[r][c] + ".jpg";
-        }
-        else if (!card2Selected && this != card1Selected) {
+        } else if (!card2Selected && this != card1Selected) {
             card2Selected = this;
 
             let coords = card2Selected.id.split("-"); //"0-1" -> ["0", "1"]
@@ -93,14 +114,13 @@ function selectCard() {
             let c = parseInt(coords[1]);
 
             card2Selected.src = board[r][c] + ".jpg";
-            setTimeout(update, 1000);
+            setTimeout(update, getGameTimer());
         }
     }
-
 }
 
 function update() {
-    //if cards aren't the same, flip both back
+    // If cards aren't the same, flip both back
     if (card1Selected.src != card2Selected.src) {
         card1Selected.src = "back.jpg";
         card2Selected.src = "back.jpg";
@@ -110,4 +130,18 @@ function update() {
 
     card1Selected = null;
     card2Selected = null;
+}
+
+function getGameTimer() {
+    // Get the game timer based on difficulty
+    switch (difficulty) {
+        case "easy":
+            return 3000; // 3 seconds
+        case "medium":
+            return 2000; // 2 seconds
+        case "hard":
+            return 1000; // 1 second
+        default:
+            return 3000; // Default to easy
+    }
 }
